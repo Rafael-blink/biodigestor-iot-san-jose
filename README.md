@@ -1,32 +1,50 @@
 # 🌱 Sistema de Monitoreo IoT para Biodigestor Anaeróbico
 
-[![Tech4Good](https://img.shields.io/badge/Tech4Good-Challenge%202025-blue?style=for-the-badge)](https://tech4goodchallenge.org)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python](https://img.shields.io/badge/MicroPython-3.4+-green.svg)](https://micropython.org/)
-[![Hardware](https://img.shields.io/badge/Raspberry%20Pi-Pico%20W-red.svg)](https://www.raspberrypi.com/products/raspberry-pi-pico/)
+<div align="center">
 
-## 📋 Descripción
+![Tech4Good](https://img.shields.io/badge/Tech4Good-Challenge-brightgreen?style=for-the-badge)
+![License MIT](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)
+![Python](https://img.shields.io/badge/MicroPython-3.x-yellow?style=for-the-badge&logo=python)
+![Hardware](https://img.shields.io/badge/Hardware-Open_Source-orange?style=for-the-badge)
+![ODS](https://img.shields.io/badge/ODS-4_·_7_·_13-9cf?style=for-the-badge)
 
-Sistema de monitoreo IoT de código abierto para un biodigestor anaeróbico tubular instalado en la **Institución Educativa San José de Canalete**, Córdoba, Colombia. Este proyecto transforma residuos pecuarios y vegetales en biogás para generar energía eléctrica, garantizando la continuidad de las actividades académicas en una zona rural con suministro eléctrico inestable.
+**Sistema de monitoreo IoT de código abierto para biodigestor anaeróbico tubular**  
+*Institución Educativa San José de Canalete, Córdoba, Colombia*
 
-El sistema monitorea en tiempo real variables críticas del proceso de digestión anaeróbica: temperatura, presión del biogás, nivel de biol, concentración de metano y pH, utilizando una Raspberry Pi Pico W y sensores de bajo costo. Los datos se transmiten a una plataforma IoT para visualización y análisis remoto.
+</div>
 
-## 🎯 El Problema que Resolvemos
+---
+
+## Descripción
+
+Este proyecto transforma residuos pecuarios y vegetales en biogás para generar energía eléctrica, garantizando la continuidad de las actividades académicas en una zona rural con suministro eléctrico inestable.
+
+El sistema monitorea en tiempo real variables críticas del proceso de digestión anaeróbica — temperatura, presión del biogás, nivel de biol, concentración de metano y pH — utilizando una **Raspberry Pi Pico W** y sensores de bajo costo. Los datos se transmiten a una plataforma IoT para visualización y análisis remoto.
+
+---
+
+## Planteamiento del Problema
 
 En el municipio de Canalete, Córdoba, la inestabilidad del suministro eléctrico afecta significativamente a las instituciones educativas rurales:
-- ❌ Interrupción de clases por cortes de energía
-- ❌ Imposibilidad de usar equipos pedagógicos esenciales
-- ❌ Gestión inadecuada de residuos orgánicos que genera emisiones de metano
 
-##  Nuestra Solución
+| Problema | Impacto |
+|----------|---------|
+| Cortes de energía frecuentes | Interrupción de clases |
+| Equipos pedagógicos inutilizables | Reducción de la calidad educativa |
+| Residuos orgánicos sin gestión | Emisiones de metano no controladas |
+
+### Solución Propuesta
 
 Un sistema de biodigestión anaeróbica con monitoreo inteligente que:
-- ✅ Genera energía eléctrica a partir de residuos pecuarios locales
-- ✅ Monitorea variables críticas en tiempo real con IoT
-- ✅ Capacita a la comunidad educativa en tecnologías sostenibles
-- ✅ Promueve un modelo de economía circular replicable
 
-##  Arquitectura del Sistema
+- Genera energía eléctrica a partir de residuos pecuarios locales
+- Monitorea variables críticas en tiempo real mediante IoT
+- Capacita a la comunidad educativa en tecnologías sostenibles
+- Promueve un modelo de economía circular replicable
+
+---
+
+## Arquitectura del Sistema
 
 ```mermaid
 graph TD
@@ -38,98 +56,128 @@ graph TD
     E --> G[Dashboard Web]
     F --> H[LEDs de Estado]
     D --> I[Consola Serial]
-    
-    B1[DS18B20 Temperatura] --> B
-    B2[JSN-SR04T Nivel Biol] --> B
-    B3[MPX5100DP Presión] --> B
-    B4[MQ-4 Metano] --> B
 
-Componentes del Sistema
+    B1[DS18B20 · Temperatura] --> B
+    B2[JSN-SR04T · Nivel Biol] --> B
+    B3[MPX5100DP · Presión] --> B
+    B4[MQ-4 · Metano] --> B
+```
 
-Microcontrolador	Raspberry Pi Pico W	
-Temperatura	DS18B20	
-Nivel	JSN-SR04T	
-Presión	MPX5100DP	
-Gas Metano	MQ-4	
-ADC	ADS1115	
-Alimentación	LM2596	
+### Componentes del Sistema
 
-Instalación Rápida
-Requisitos Previos
-Raspberry Pi Pico W con firmware MicroPython
+| Función | Componente |
+|---------|-----------|
+| Microcontrolador | Raspberry Pi Pico W |
+| Sensor de Temperatura | DS18B20 |
+| Sensor de Nivel de Biol | JSN-SR04T |
+| Sensor de Presión de Biogás | MPX5100DP |
+| Sensor de Gas Metano | MQ-4 |
+| Convertidor ADC | ADS1115 |
+| Regulador de Alimentación | LM2596 |
 
-Thonny IDE instalado en tu computadora
+---
 
-Componentes listados en BOM.md
+## Instalación
 
-Configuración
-Clona este repositorio
+### Requisitos Previos
 
-Abre src/config.py y configura:
+- Raspberry Pi Pico W con firmware MicroPython
+- Thonny IDE instalado en el equipo de trabajo
+- Componentes listados en [`hardware/BOM.md`](hardware/BOM.md)
 
-Credenciales WiFi (SSID, PASSWORD)
+### Pasos de Configuración
 
-API Key de ThingSpeak (THINGSPEAK_API_KEY)
+1. Clonar el repositorio:
+   ```bash
+   git clone https://github.com/tu-usuario/biodigestor-iot.git
+   cd biodigestor-iot
+   ```
 
-Umbrales de tu biodigestor
+2. Configurar las credenciales en `src/config.py`:
+   ```python
+   SSID = "nombre_red_wifi"
+   PASSWORD = "contraseña"
+   THINGSPEAK_API_KEY = "api_key"
+   ```
 
-Conecta los sensores siguiendo el diagrama en hardware/
+3. Ajustar los umbrales del biodigestor en el mismo archivo de configuración.
 
-Copia todos los archivos de src/ a tu Pico W
+4. Conectar los sensores siguiendo el diagrama en [`hardware/`](hardware/).
 
-Ejecuta main.py
+5. Copiar todos los archivos de `src/` a la Pico W mediante Thonny.
 
-Variables Monitoreadas
-Variable	Sensor	Rango Típico	Umbral Crítico
-Temperatura	DS18B20	30-40°C	< 25°C o > 45°C
-Nivel de Biol	JSN-SR04T	20-80 cm	> 90 cm (rebose)
-Presión Biogás	MPX5100DP	0-5 kPa	> 10 kPa
-Metano	MQ-4	< 1000 PPM	> 5000 PPM
-pH (futuro)	Genérico	6.5-7.5	< 6.0 o > 8.0
+6. Ejecutar `main.py`.
 
-Impacto Educativo y Social
-Este proyecto incluye:
+---
 
-2 talleres teórico-prácticos para docentes, estudiantes y personal
+## Variables Monitoreadas
 
-Material didáctico: manuales, infografías y videos educativos
+| Variable | Sensor | Rango Típico | Umbral Crítico |
+|----------|--------|-------------|----------------|
+| Temperatura | DS18B20 | 30 – 40 °C | < 25 °C o > 45 °C |
+| Nivel de Biol | JSN-SR04T | 20 – 80 cm | > 90 cm (rebose) |
+| Presión de Biogás | MPX5100DP | 0 – 5 kPa | > 10 kPa |
+| Concentración de Metano | MQ-4 | < 1000 PPM | > 5000 PPM |
+| pH *(trabajo futuro)* | Genérico | 6.5 – 7.5 | < 6.0 o > 8.0 |
 
-Plan de mantenimiento comunitario para sostenibilidad a largo plazo
+---
 
-Participación en eventos de apropiación social del conocimiento
+## Impacto Educativo y Social
 
-Tech4Good Challenge 
-Este proyecto participa en el Tech4Good Challenge, una iniciativa que busca soluciones tecnológicas innovadoras para problemas sociales y ambientales. Nuestro sistema aborda:
+El proyecto contempla las siguientes acciones de apropiación social del conocimiento:
 
-ODS 4: Educación de Calidad
+- Dos talleres teórico-prácticos dirigidos a docentes, estudiantes y personal de la institución
+- Elaboración de material didáctico: manuales, infografías y videos educativos
+- Plan de mantenimiento comunitario para garantizar la sostenibilidad a largo plazo
+- Participación en eventos de difusión científica y tecnológica
 
-ODS 7: Energía Asequible y No Contaminante
+### Objetivos de Desarrollo Sostenible (ODS)
 
-ODS 13: Acción por el Clima
+| ODS | Descripción |
+|-----|-------------|
+| ODS 4 | Educación de Calidad |
+| ODS 7 | Energía Asequible y No Contaminante |
+| ODS 13 | Acción por el Clima |
 
-👥 Equipo
-Investigador Principal	Rafael Gustavo Ramos Noriega	Universidad Pontificia Bolivariana Ingeniería Electrónica
-Directora	Ana Milena López López	Universidad Pontificia Bolivariana
-Co-director	Carlos Andrés Marenco Porto	Universidad Pontificia Bolivariana
+---
 
-📄 Licencia
-Este proyecto está bajo la Licencia MIT - vea el archivo LICENSE para más detalles.
+## Equipo de Investigación
 
-El hardware es open source bajo CERN Open Hardware Licence Version 2 - Strongly Reciprocal (CERN-OHL-S-2.0).
+| Rol | Nombre | Institución | Programa |
+|-----|--------|------------|----------|
+| Investigador Principal | Rafael Gustavo Ramos Noriega | Universidad Pontificia Bolivariana | Ingeniería Electrónica |
+| Directora | Ana Milena López López | Universidad Pontificia Bolivariana | Ciencias Básicas |
+| Co-director | Carlos Andrés Marenco Porto | Universidad Pontificia Bolivariana | Ingeniería Mecánica |
 
-📚 Documentación Adicional
-Especificación Técnica
+---
 
-Guía de Ensamblaje
+## Documentación
 
-Guía de Implementación
+| Documento | Descripción |
+|-----------|-------------|
+| [Especificación Técnica](docs/technical-spec.md) | Detalles de diseño del sistema |
+| [Guía de Ensamblaje](docs/assembly-guide.md) | Instrucciones de montaje del hardware |
+| [Guía de Implementación](docs/implementation-guide.md) | Despliegue del sistema completo |
+| [Impacto Tech4Good](docs/impact.md) | Análisis de impacto social y ambiental |
+| [Lista de Materiales](hardware/BOM.md) | Componentes y referencias comerciales |
 
-Impacto Tech4Good
+---
 
-🤝 Cómo Contribuir
-¡Las contribuciones son bienvenidas! Por favor lee CONTRIBUTING_ES.md para conocer nuestras pautas.
+## Contribuciones
 
-Contacto
-Email: rafael.ramosn@upb.edu.co
+Las contribuciones son bienvenidas. Por favor, consulte el archivo [`CONTRIBUTING_ES.md`](CONTRIBUTING_ES.md) para conocer las pautas del proyecto antes de enviar un *pull request*.
 
-Universidad: Pontificia Bolivariana seccional Montería
+---
+
+## Licencia
+
+El software está distribuido bajo la [Licencia MIT](LICENSE).  
+El hardware es de código abierto bajo la [CERN Open Hardware Licence v2 - Strongly Reciprocal (CERN-OHL-S-2.0)](https://ohwr.org/cern_ohl_s_v2.txt).
+
+---
+
+## Contacto
+
+**Rafael Gustavo Ramos Noriega**  
+Correo: [rafael.ramosn@upb.edu.co](mailto:rafael.ramosn@upb.edu.co)  
+Universidad Pontificia Bolivariana — Seccional Montería
