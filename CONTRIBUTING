@@ -1,0 +1,67 @@
+# 🤝 Guía de Contribución
+ 
+Gracias por su interés en contribuir al Sistema de Monitoreo IoT para Biodigestores de la Institución Educativa San José de Canalete. Este documento establece las pautas y procedimientos para participar en el desarrollo del proyecto.
+ 
+---
+ 
+## Código de Conducta
+ 
+Este proyecto se rige por un [Código de Conducta](CODE_OF_CONDUCT.md). Al participar, se espera que todos los colaboradores lo respeten en cada interacción dentro del repositorio.
+ 
+---
+ 
+## Formas de Contribuir
+ 
+### Reporte de Errores
+ 
+Antes de reportar un error, verifique que no haya sido registrado previamente en la sección de [Issues](https://github.com/TU-USUARIO/biodigestor-iot-san-jose/issues). Al crear un nuevo reporte, utilice la plantilla disponible e incluya la siguiente información:
+ 
+- Versión de MicroPython utilizada
+- Descripción detallada del problema
+- Pasos para reproducir el error
+- Comportamiento esperado versus comportamiento observado
+### Sugerencias de Mejora
+ 
+Para proponer nuevas funcionalidades, verifique que no hayan sido sugeridas con anterioridad. Utilice la plantilla de *feature request* y justifique por qué la mejora aportaría valor al proyecto.
+ 
+### Pull Requests
+ 
+1. Haga un *fork* del repositorio.
+2. Cree una rama con un nombre descriptivo:
+   - `feature/nombre-funcionalidad` para nuevas características
+   - `fix/descripcion-del-error` para correcciones
+3. Escriba código limpio con comentarios en español.
+4. Actualice la documentación si el cambio lo requiere.
+5. Verifique que las pruebas existentes pasen correctamente.
+6. Envíe el PR con una descripción clara del cambio realizado y su motivación.
+---
+ 
+## Estándares de Código
+ 
+### Python / MicroPython
+ 
+| Aspecto | Convención |
+|---------|------------|
+| Estilo general | PEP 8 (en la medida que el entorno lo permita) |
+| Comentarios y docstrings | Español, con términos técnicos en inglés |
+| Variables y funciones | Inglés, notación `snake_case` |
+| Clases | Inglés, notación `PascalCase` |
+| Docstrings | Obligatorio en cada función |
+| Recursos | El código debe operar dentro de las limitaciones de memoria de la Raspberry Pi Pico W |
+ 
+### Documentación
+ 
+- El README principal debe mantenerse en español e inglés.
+- Los documentos técnicos se redactan en español.
+- Los *issues* y *pull requests* pueden estar en español o inglés.
+---
+ 
+## Pruebas
+ 
+- Se recomienda probar los cambios en hardware real cuando se disponga de los componentes.
+- En caso contrario, documente con detalle qué se probó, el método utilizado y adjunte capturas de la consola serial si resulta pertinente.
+---
+ 
+## Contacto
+ 
+Para dudas sobre el proceso de contribución, abra un *issue* con la etiqueta `question` o comuníquese directamente a [rafael.ramosn@upb.edu.co](mailto:rafael.ramosn@upb.edu.co).
