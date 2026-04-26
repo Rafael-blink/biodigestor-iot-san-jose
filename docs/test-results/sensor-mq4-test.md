@@ -1,7 +1,5 @@
 # Prueba 5: Sensor de Gas Metano MQ-4
 
-**Fecha:** 26 de Abril de 2026
-**Investigador:** Rafael Gustavo Ramos Noriega
 **Firmware:** MicroPython
 **Script utilizado:** tests/test_mq4.py
 
