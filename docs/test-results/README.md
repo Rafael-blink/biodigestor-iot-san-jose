@@ -14,6 +14,7 @@
 | ADS1115 | ADC 16 bits | 27 Abr 2026 | Completado | 16 bits | <a>sensor-ads1115-test.md</a> |
 | MPX5100DP | Presión biogás | 27 Abr 2026 | Completado | ±0.01 kPa | <a>sensor-mpx5100dp-test.md</a> |
 | MQ-4 | Metano | 26 Abr 2026 | Completado | Cualitativo (Rs/R0) | [sensor-mq4-test.md](sensor-mq4-test.md) |
+| Sistema completo | Integracion de 5 sensores | 26 Abr 2026 | Completado | 100% exito | [integration-test.md](integration-test.md) |
 
 ### Resumen de Resultados
 
