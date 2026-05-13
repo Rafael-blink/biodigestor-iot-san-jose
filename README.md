@@ -51,7 +51,7 @@ graph TD
     A[Biodigestor Tubular] --> B[Sensores]
     B --> C[Raspberry Pi Pico W]
     C --> D[Procesamiento Local]
-    D --> E[ThingSpeak IoT]
+    D --> E[Azure]
     D --> F[Control de Alarmas]
     E --> G[Dashboard Web]
     F --> H[LEDs de Estado]
