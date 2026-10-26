@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Biodigestor Mágico</title>
+    <style>
+        body { font-family: 'Comic Sans MS', cursive, sans-serif; background-color: #e0f7fa; text-align: center; padding: 20px; }
+        h1 { color: #00695c; font-size: 3em; }
+        .contenedor { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin-top: 30px; }
+        .tarjeta { background-color: white; border-radius: 20px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); padding: 20px; width: 200px; }
+        .tarjeta h2 { margin: 0; font-size: 1.5em; color: #00796b; }
+        .valor { font-size: 3em; font-weight: bold; margin: 10px 0; }
+        .temp { color: #d32f2f; } .nivel { color: #1976d2; } .presion { color: #f57c00; } .metano { color: #7b1fa2; }
+        .emoji { font-size: 4em; }
+        #actualizacion { margin-top: 30px; color: #555; font-size: 1.2em; }
+    </style>
+</head>
+<body>
+    <h1>🌱 Mi Biodigestor Mágico 🌱</h1>
+    <p>¡Mira lo que está pasando dentro!</p>
+
+    <div class="contenedor">
+        <div class="tarjeta">
+            <div class="emoji">🌡️</div>
+            <h2>Temperatura</h2>
+            <div class="valor temp" id="temp">--</div>
+            <div>°C</div>
+        </div>
+        <div class="tarjeta">
+            <div class="emoji">💧</div>
+            <h2>Nivel de Agua</h2>
+            <div class="valor nivel" id="nivel">--</div>
+            <div>%</div>
+        </div>
+        <div class="tarjeta">
+            <div class="emoji">💨</div>
+            <h2>Presión</h2>
+            <div class="valor presion" id="presion">--</div>
+            <div>kPa</div>
+        </div>
+        <div class="tarjeta">
+            <div class="emoji">🔥</div>
+            <h2>Gas Metano</h2>
+            <div class="valor metano" id="metano">--</div>
+            <div>Rs/R0</div>
+        </div>
+    </div>
+
+    <div id="actualizacion">Cargando datos...</div>
+
+    <script>
+        async function cargarDatos() {
+            try {
+                // Lee el archivo JSON desde la misma carpeta docs
+                const respuesta = await fetch('datos.json?t=' + new Date().getTime());
+                const datos = await respuesta.json();
+
+                document.getElementById('temp').textContent = datos.temperatura ? datos.temperatura.toFixed(1) : '--';
+                document.getElementById('nivel').textContent = datos.nivel_biol ? datos.nivel_biol.toFixed(1) : '--';
+                document.getElementById('presion').textContent = datos.presion_kpa ? datos.presion_kpa.toFixed(2) : '--';
+                document.getElementById('metano').textContent = datos.metano_rs_ro ? datos.metano_rs_ro.toFixed(2) : '--';
+
+                document.getElementById('actualizacion').textContent = 'Última actualización: ' + (datos.ultima_actualizacion || 'Desconocida');
+            } catch (error) {
+                console.error('Error al cargar datos:', error);
+                document.getElementById('actualizacion').textContent = 'No se pudieron cargar los datos.';
+            }
+        }
+
+        // Cargar al inicio y luego cada 30 segundos
+        cargarDatos();
+        setInterval(cargarDatos, 30000);
+    </script>
+</body>
+</html>
