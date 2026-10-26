@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Biodigestor Mágico</title>
-    <!-- Cargamos Chart.js desde su CDN oficial -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body { font-family: 'Comic Sans MS', cursive, sans-serif; background-color: #e0f7fa; text-align: center; padding: 20px; margin: 0; }
@@ -16,13 +15,18 @@
         .temp { color: #d32f2f; } .nivel { color: #1976d2; } .presion { color: #f57c00; } .metano { color: #7b1fa2; }
         .emoji { font-size: 4em; }
         #actualizacion { margin-top: 30px; color: #555; font-size: 1.2em; }
-        
-        /* Estilos para la gráfica */
-        .grafica-container { background: white; border-radius: 20px; padding: 20px; margin: 40px auto; max-width: 800px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); }
+
+        .historia { max-width: 1100px; margin: 40px auto; }
         .filtros { margin-bottom: 20px; }
         .filtros button { font-family: inherit; padding: 10px 20px; margin: 5px; border: none; border-radius: 10px; background: #b2dfdb; cursor: pointer; font-size: 1em; font-weight: bold; color: #004d40; }
         .filtros button:hover { background: #80cbc4; }
         .filtros button.activo { background: #00695c; color: white; }
+
+        .rejilla { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 20px; }
+        .grafica-container { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); }
+        .grafica-container h3 { margin: 0 0 10px 0; font-size: 1.4em; }
+        .grafica-container canvas { max-height: 260px; }
+        @media (max-width: 480px) { .rejilla { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -58,118 +62,156 @@
 
     <div id="actualizacion">Cargando datos...</div>
 
-    <!-- Sección de la Gráfica Histórica -->
-    <div class="grafica-container">
+    <div class="historia">
         <h2>📈 Historia del Biodigestor</h2>
         <div class="filtros">
-            <button onclick="filtrarGrafica(1)" id="btn-1d" class="activo">1 Día</button>
-            <button onclick="filtrarGrafica(7)" id="btn-7d">1 Semana</button>
-            <button onclick="filtrarGrafica(30)" id="btn-30d">1 Mes</button>
+            <button onclick="filtrarGrafica(1)" id="btn-1" class="activo">1 Día</button>
+            <button onclick="filtrarGrafica(7)" id="btn-7">1 Semana</button>
+            <button onclick="filtrarGrafica(30)" id="btn-30">1 Mes</button>
         </div>
-        <canvas id="graficaHistorial"></canvas>
+
+        <div class="rejilla">
+            <div class="grafica-container"><h3 class="temp">🌡️ Temperatura</h3><canvas id="g-temperatura"></canvas></div>
+            <div class="grafica-container"><h3 class="nivel">💧 Nivel de Biol</h3><canvas id="g-nivel"></canvas></div>
+            <div class="grafica-container"><h3 class="presion">💨 Presión</h3><canvas id="g-presion"></canvas></div>
+            <div class="grafica-container"><h3 class="metano">🔥 Gas Metano</h3><canvas id="g-metano"></canvas></div>
+        </div>
     </div>
 
     <script>
-        let chartInstance = null;
-        let datosHistorial = []; // Aquí guardaremos todos los datos del CSV
+        let datosHistorial = [];
+        let diasActivos = 1;
+        const graficas = {};
 
-        // Función para leer el CSV
+        // Variables a graficar
+        const VARIABLES = [
+            { clave: 'temperatura', canvas: 'g-temperatura', nombre: 'Temperatura', unidad: '°C',    color: '#d32f2f', fondo: 'rgba(211,47,47,0.15)' },
+            { clave: 'nivel',       canvas: 'g-nivel',       nombre: 'Nivel de Biol', unidad: '%',    color: '#1976d2', fondo: 'rgba(25,118,210,0.15)', min: 0, max: 100 },
+            { clave: 'presion',     canvas: 'g-presion',     nombre: 'Presión', unidad: 'kPa',        color: '#f57c00', fondo: 'rgba(245,124,0,0.15)' },
+            { clave: 'metano',      canvas: 'g-metano',      nombre: 'Gas Metano', unidad: 'Rs/R0',   color: '#7b1fa2', fondo: 'rgba(123,31,162,0.15)' }
+        ];
+
+        // Cada cuánto se promedian los datos (suaviza la línea)
+        // 1 día -> cada 30 min | 1 semana -> cada 3 horas | 1 mes -> cada 12 horas
+        const BLOQUE_MIN = { 1: 30, 7: 180, 30: 720 };
+
+        function parsearFecha(texto) {
+            // "2026-10-26 10:30:00" -> formato compatible con todos los navegadores
+            return new Date(texto.trim().replace(' ', 'T'));
+        }
+
         async function cargarHistorial() {
             try {
                 const respuesta = await fetch('historial.csv?t=' + new Date().getTime());
                 const texto = await respuesta.text();
-                
-                // Parsear el CSV simple (ignorando líneas vacías)
                 const lineas = texto.trim().split('\n');
-                const cabecera = lineas[0].split(',');
-                
-                datosHistorial = lineas.slice(1).map(linea => {
-                    const valores = linea.split(',');
-                    return {
-                        fecha: new Date(valores[0]),
-                        temperatura: parseFloat(valores[1]),
-                        nivel: parseFloat(valores[2]),
-                        presion: parseFloat(valores[3]),
-                        metano: parseFloat(valores[4])
-                    };
-                }).filter(d => !isNaN(d.fecha.getTime())); // Filtrar fechas inválidas
 
-                // Actualizar las tarjetas con el último dato
+                datosHistorial = lineas.slice(1).map(linea => {
+                    const v = linea.split(',');
+                    return {
+                        fecha: parsearFecha(v[0]),
+                        temperatura: parseFloat(v[1]),
+                        nivel: parseFloat(v[2]),
+                        presion: parseFloat(v[3]),
+                        metano: parseFloat(v[4])
+                    };
+                }).filter(d => !isNaN(d.fecha.getTime()));
+
                 if (datosHistorial.length > 0) {
-                    const ultimo = datosHistorial[datosHistorial.length - 1];
-                    document.getElementById('temp').textContent = isNaN(ultimo.temperatura) ? '--' : ultimo.temperatura.toFixed(1);
-                    document.getElementById('nivel').textContent = isNaN(ultimo.nivel) ? '--' : ultimo.nivel.toFixed(1);
-                    document.getElementById('presion').textContent = isNaN(ultimo.presion) ? '--' : ultimo.presion.toFixed(2);
-                    document.getElementById('metano').textContent = isNaN(ultimo.metano) ? '--' : ultimo.metano.toFixed(2);
-                    document.getElementById('actualizacion').textContent = 'Última actualización: ' + ultimo.fecha.toLocaleString();
+                    const u = datosHistorial[datosHistorial.length - 1];
+                    document.getElementById('temp').textContent = isNaN(u.temperatura) ? '--' : u.temperatura.toFixed(1);
+                    document.getElementById('nivel').textContent = isNaN(u.nivel) ? '--' : u.nivel.toFixed(1);
+                    document.getElementById('presion').textContent = isNaN(u.presion) ? '--' : u.presion.toFixed(2);
+                    document.getElementById('metano').textContent = isNaN(u.metano) ? '--' : u.metano.toFixed(2);
+                    document.getElementById('actualizacion').textContent = 'Última actualización: ' + u.fecha.toLocaleString();
                 }
 
-                // Dibujar la gráfica con el filtro activo
-                dibujarGrafica(1);
-
+                dibujarGraficas(diasActivos);
             } catch (error) {
                 console.error('Error al cargar historial:', error);
                 document.getElementById('actualizacion').textContent = 'No se pudieron cargar los datos históricos.';
             }
         }
 
-        // Función para dibujar/filtrar la gráfica
-        function dibujarGrafica(dias) {
+        // Promedia los datos en bloques de tiempo para que la línea sea suave
+        function agrupar(datos, clave, bloqueMin) {
+            const ms = bloqueMin * 60 * 1000;
+            const grupos = new Map();
+            for (const d of datos) {
+                const valor = d[clave];
+                if (isNaN(valor)) continue;
+                const inicio = Math.floor(d.fecha.getTime() / ms) * ms;
+                if (!grupos.has(inicio)) grupos.set(inicio, []);
+                grupos.get(inicio).push(valor);
+            }
+            return [...grupos.entries()]
+                .sort((a, b) => a[0] - b[0])
+                .map(([t, vals]) => ({ t: new Date(t), v: vals.reduce((s, x) => s + x, 0) / vals.length }));
+        }
+
+        function etiqueta(fecha, dias) {
+            if (dias === 1) return fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            return fecha.toLocaleDateString([], { day: '2-digit', month: 'short' }) + ' ' +
+                   fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function dibujarGraficas(dias) {
             if (datosHistorial.length === 0) return;
 
-            // Filtrar datos según los días seleccionados
-            const ahora = new Date();
-            const limite = new Date(ahora.getTime() - (dias * 24 * 60 * 60 * 1000));
-            const datosFiltrados = datosHistorial.filter(d => d.fecha >= limite);
+            // Usamos el último dato como referencia (así funciona aunque el reloj de la Pico se desfase)
+            const referencia = datosHistorial[datosHistorial.length - 1].fecha;
+            const limite = new Date(referencia.getTime() - dias * 24 * 60 * 60 * 1000);
+            const datos = datosHistorial.filter(d => d.fecha >= limite);
 
-            const etiquetas = datosFiltrados.map(d => d.fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
-            const valoresTemp = datosFiltrados.map(d => d.temperatura);
+            VARIABLES.forEach(cfg => {
+                const puntos = agrupar(datos, cfg.clave, BLOQUE_MIN[dias]);
+                const etiquetas = puntos.map(p => etiqueta(p.t, dias));
+                const valores = puntos.map(p => Number(p.v.toFixed(2)));
 
-            if (chartInstance) {
-                chartInstance.destroy(); // Destruir gráfica anterior
-            }
+                if (graficas[cfg.canvas]) graficas[cfg.canvas].destroy();
 
-            const ctx = document.getElementById('graficaHistorial').getContext('2d');
-            chartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: etiquetas,
-                    datasets: [{
-                        label: 'Temperatura (°C)',
-                        data: valoresTemp,
-                        borderColor: '#d32f2f',
-                        backgroundColor: 'rgba(211, 47, 47, 0.1)',
-                        borderWidth: 3,
-                        pointRadius: 3,
-                        tension: 0.4 // Suaviza la línea
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: { position: 'top' },
-                        tooltip: { mode: 'index', intersect: false }
+                const escalaY = { title: { display: true, text: cfg.unidad } };
+                if (cfg.min !== undefined) { escalaY.min = cfg.min; escalaY.max = cfg.max; }
+
+                graficas[cfg.canvas] = new Chart(document.getElementById(cfg.canvas).getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: etiquetas,
+                        datasets: [{
+                            label: cfg.nombre + ' (' + cfg.unidad + ')',
+                            data: valores,
+                            borderColor: cfg.color,
+                            backgroundColor: cfg.fondo,
+                            fill: true,
+                            borderWidth: 3,
+                            pointRadius: 0,
+                            pointHoverRadius: 5,
+                            tension: 0.45,
+                            spanGaps: true
+                        }]
                     },
-                    scales: {
-                        x: { title: { display: true, text: 'Hora' } },
-                        y: { title: { display: true, text: 'Temperatura (°C)' } }
+                    options: {
+                        responsive: true,
+                        animation: false,
+                        interaction: { mode: 'index', intersect: false },
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { ticks: { maxTicksLimit: 6, maxRotation: 0 }, grid: { display: false } },
+                            y: escalaY
+                        }
                     }
-                }
+                });
             });
         }
 
-        // Función para los botones de filtro
         function filtrarGrafica(dias) {
-            // Cambiar botón activo
-            document.querySelectorAll('.filtros button').forEach(btn => btn.classList.remove('activo'));
-            document.getElementById('btn-' + (dias === 1 ? '1d' : dias === 7 ? '7d' : '30d')).classList.add('activo');
-            
-            dibujarGrafica(dias);
+            diasActivos = dias;
+            document.querySelectorAll('.filtros button').forEach(b => b.classList.remove('activo'));
+            document.getElementById('btn-' + dias).classList.add('activo');
+            dibujarGraficas(dias);
         }
 
-        // Cargar al inicio
         cargarHistorial();
-        // Recargar cada 30 segundos
         setInterval(cargarHistorial, 30000);
     </script>
 </body>
