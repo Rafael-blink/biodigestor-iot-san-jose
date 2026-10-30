@@ -195,10 +195,27 @@
 
             Object.keys(charts).forEach(k => { if (charts[k]) charts[k].destroy(); });
 
-            charts.temp = crearGrafica('chartTemp', 'Temperatura', '#d32f2f', filtrados.map(d => d.temperatura), etiquetas, '°C');
-            charts.nivel = crearGrafica('chartNivel', 'Nivel', '#1976d2', filtrados.map(d => d.nivel), etiquetas, '%');
-            charts.presion = crearGrafica('chartPresion', 'Presión', '#f57c00', filtrados.map(d => d.presion), etiquetas, 'kPa');
-            charts.metano = crearGrafica('chartMetano', 'Metano', '#7b1fa2', filtrados.map(d => d.metano), etiquetas, 'Rs/R0');
+            // Ventana de suavizado (en puntos; 1 punto = 5 min). Súbela para más suavizado.
+            const v = dias === 1 ? VENTANA_24H : VENTANA_SEMANA;
+
+            charts.temp = crearGrafica('chartTemp', 'Temperatura', '#d32f2f', suavizar(filtrados.map(d => d.temperatura), v), etiquetas, '°C');
+            charts.nivel = crearGrafica('chartNivel', 'Nivel', '#1976d2', suavizar(filtrados.map(d => d.nivel), v), etiquetas, '%');
+            charts.presion = crearGrafica('chartPresion', 'Presión', '#f57c00', suavizar(filtrados.map(d => d.presion), v), etiquetas, 'kPa');
+            charts.metano = crearGrafica('chartMetano', 'Metano', '#7b1fa2', suavizar(filtrados.map(d => d.metano), v), etiquetas, 'Rs/R0');
+        }
+
+        // Promedio móvil centrado: cada punto es el promedio de sus vecinos (ignora NaN)
+        const VENTANA_24H = 9;      // ~45 min
+        const VENTANA_SEMANA = 25;  // ~2 horas
+        function suavizar(datos, ventana) {
+            const mitad = Math.floor(ventana / 2);
+            return datos.map((_, i) => {
+                let suma = 0, n = 0;
+                for (let j = Math.max(0, i - mitad); j <= Math.min(datos.length - 1, i + mitad); j++) {
+                    if (!isNaN(datos[j])) { suma += datos[j]; n++; }
+                }
+                return n > 0 ? suma / n : NaN;
+            });
         }
 
         function filtrarGraficas(dias) {
