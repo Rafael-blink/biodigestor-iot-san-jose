@@ -1,4 +1,4 @@
-name: Agregar dato
+name: Agregar dato semanal
 on:
   repository_dispatch:
     types: [nuevo-dato]
@@ -10,15 +10,32 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Agregar linea al CSV
+        with:
+          fetch-depth: 1
+      - name: Agregar linea al CSV semanal
         env:
           LINEA: ${{ github.event.client_payload.linea }}
-        run: echo "$LINEA" >> docs/historial.csv
+        run: |
+          # Extraer la fecha de la línea (ej: 2026-10-29 19:10:00)
+          FECHA="${LINEA%%,*}"
+          # Calcular la semana ISO (ej: 2026-W44)
+          SEMANA=$(date -d "$FECHA" +%G-W%V)
+          
+          mkdir -p docs/historial
+          ARCHIVO="docs/historial/${SEMANA}.csv"
+          
+          # Si el archivo no existe, crear la cabecera
+          [ -f "$ARCHIVO" ] || echo "fecha,temperatura,nivel,presion,metano" > "$ARCHIVO"
+          
+          # Agregar la línea nueva
+          echo "$LINEA" >> "$ARCHIVO"
+          
+          # Guardar el nombre de la semana actual en un archivo de texto para que la web lo lea
+          echo "$SEMANA" > docs/historial/semana_actual.txt
       - name: Commit y push
         run: |
-          git config user.name "bot"
-          git config user.email "bot@users.noreply.github.com"
-          git add docs/historial.csv
-          git commit -m "Nuevo dato de sensor"
-          git pull --rebase
-          git push
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/historial
+          git commit -m "Nuevo dato de sensor - Semana $(date +%G-W%V)"
+          git push origin HEAD:main
