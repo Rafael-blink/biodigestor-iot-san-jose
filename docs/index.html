@@ -16,7 +16,9 @@
         .emoji { font-size: 4em; }
         #actualizacion { margin-top: 30px; color: #555; font-size: 1.2em; }
         
-        .grafica-container { background: white; border-radius: 20px; padding: 20px; margin: 40px auto; max-width: 800px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); }
+        .graficas-container { max-width: 800px; margin: 40px auto; display: flex; flex-direction: column; gap: 30px; }
+        .grafica-box { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); }
+        .grafica-box h2 { margin-top: 0; color: #00695c; }
         .filtros { margin-bottom: 20px; }
         .filtros button { font-family: inherit; padding: 10px 20px; margin: 5px; border: none; border-radius: 10px; background: #b2dfdb; cursor: pointer; font-size: 1em; font-weight: bold; color: #004d40; }
         .filtros button:hover { background: #80cbc4; }
@@ -56,34 +58,47 @@
 
     <div id="actualizacion">Cargando datos...</div>
 
-    <div class="grafica-container">
-        <h2>📈 Historia del Biodigestor (Semana Actual)</h2>
-        <div class="filtros">
-            <button onclick="filtrarGrafica(1)" id="btn-1d" class="activo">1 Día</button>
-            <button onclick="filtrarGrafica(7)" id="btn-7d">Toda la Semana</button>
+    <div class="graficas-container">
+        <div class="grafica-box">
+            <h2>📈 Temperatura (°C)</h2>
+            <div class="filtros">
+                <button onclick="filtrarGraficas(1)" id="btn-1d" class="activo">Últimas 24h</button>
+                <button onclick="filtrarGraficas(7)" id="btn-7d">Toda la Semana</button>
+            </div>
+            <canvas id="chartTemp"></canvas>
         </div>
-        <canvas id="graficaHistorial"></canvas>
+
+        <div class="grafica-box">
+            <h2>💧 Nivel de Agua (%)</h2>
+            <canvas id="chartNivel"></canvas>
+        </div>
+
+        <div class="grafica-box">
+            <h2>💨 Presión (kPa)</h2>
+            <canvas id="chartPresion"></canvas>
+        </div>
+
+        <div class="grafica-box">
+            <h2>🔥 Gas Metano (Rs/R0)</h2>
+            <canvas id="chartMetano"></canvas>
+        </div>
     </div>
 
     <script>
-        let chartInstance = null;
+        let charts = { temp: null, nivel: null, presion: null, metano: null };
         let datosHistorial = [];
         let semanaActual = "";
 
         async function cargarHistorial() {
             try {
-                // 1. Pedir a GitHub que nos diga cuál es la semana actual
                 const respSemana = await fetch('historial/semana_actual.txt?t=' + new Date().getTime());
-                if (!respSemana.ok) throw new Error("No se encontró la semana actual");
+                if (!respSemana.ok) throw new Error("No semana");
                 const nuevaSemana = (await respSemana.text()).trim();
 
-                // Si la semana cambió (es lunes), volvemos a descargar todo el CSV
                 if (nuevaSemana !== semanaActual) {
                     semanaActual = nuevaSemana;
-                    console.log("Cargando datos de la semana:", semanaActual);
-                    
                     const respCsv = await fetch(`historial/${semanaActual}.csv?t=` + new Date().getTime());
-                    if (!respCsv.ok) throw new Error("No se encontró el archivo CSV de la semana");
+                    if (!respCsv.ok) throw new Error("No CSV");
                     const texto = await respCsv.text();
                     
                     const lineas = texto.trim().split('\n');
@@ -99,7 +114,6 @@
                     }).filter(d => !isNaN(d.fecha.getTime()));
                 }
 
-                // Actualizar las tarjetas con el último dato
                 if (datosHistorial.length > 0) {
                     const ultimo = datosHistorial[datosHistorial.length - 1];
                     document.getElementById('temp').textContent = isNaN(ultimo.temperatura) ? '--' : ultimo.temperatura.toFixed(1);
@@ -109,59 +123,72 @@
                     document.getElementById('actualizacion').textContent = 'Última actualización: ' + ultimo.fecha.toLocaleString();
                 }
 
-                // Dibujar gráfica (manteniendo el filtro activo)
                 const botonActivo = document.querySelector('.filtros button.activo');
-                const dias = botonActivo.id === 'btn-1d' ? 1 : 7;
-                dibujarGrafica(dias);
+                const dias = botonActivo && botonActivo.id === 'btn-7d' ? 7 : 1;
+                dibujarGraficas(dias);
 
             } catch (error) {
-                console.error('Error al cargar historial:', error);
+                console.error('Error:', error);
                 document.getElementById('actualizacion').textContent = 'Esperando datos nuevos...';
             }
         }
 
-        function dibujarGrafica(dias) {
-            if (datosHistorial.length === 0) return;
-
-            const ahora = new Date();
-            const limite = new Date(ahora.getTime() - (dias * 24 * 60 * 60 * 1000));
-            const datosFiltrados = datosHistorial.filter(d => d.fecha >= limite);
-
-            const etiquetas = datosFiltrados.map(d => d.fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
-            const valoresTemp = datosFiltrados.map(d => d.temperatura);
-
-            if (chartInstance) chartInstance.destroy();
-
-            const ctx = document.getElementById('graficaHistorial').getContext('2d');
-            chartInstance = new Chart(ctx, {
+        function crearGrafica(idCanvas, label, color, datos, etiquetas, unidad) {
+            const ctx = document.getElementById(idCanvas).getContext('2d');
+            return new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: etiquetas,
                     datasets: [{
-                        label: 'Temperatura (°C)',
-                        data: valoresTemp,
-                        borderColor: '#d32f2f',
-                        backgroundColor: 'rgba(211, 47, 47, 0.1)',
-                        borderWidth: 3,
-                        pointRadius: 2,
-                        tension: 0.4
+                        label: label,
+                        data: datos,
+                        borderColor: color,
+                        backgroundColor: color + '20', // 20 es el nivel de opacidad
+                        borderWidth: 2,
+                        pointRadius: 0, // Sin puntos para que se vea como una línea continua
+                        tension: 0.4,  // Aquí está el suavizado
+                        spanGaps: true // Une los huecos si hay datos NaN
                     }]
                 },
                 options: {
                     responsive: true,
-                    plugins: { legend: { position: 'top' } },
+                    plugins: { legend: { display: false } },
                     scales: {
-                        x: { title: { display: true, text: 'Hora' } },
-                        y: { title: { display: true, text: 'Temperatura (°C)' } }
+                        x: { display: false }, // Ocultamos el eje X en las gráficas secundarias para ahorrar espacio
+                        y: { title: { display: true, text: unidad } }
                     }
                 }
             });
         }
 
-        function filtrarGrafica(dias) {
+        function dibujarGraficas(dias) {
+            if (datosHistorial.length === 0) return;
+
+            const ahora = new Date();
+            const limite = new Date(ahora.getTime() - (dias * 24 * 60 * 60 * 1000));
+            const filtrados = datosHistorial.filter(d => d.fecha >= limite);
+
+            const etiquetas = filtrados.map(d => d.fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+
+            // Destruir gráficas anteriores si existen
+            Object.keys(charts).forEach(k => { if (charts[k]) charts[k].destroy(); });
+
+            // Crear las 4 gráficas
+            charts.temp = crearGrafica('chartTemp', 'Temperatura', '#d32f2f', filtrados.map(d => d.temperatura), etiquetas, '°C');
+            charts.nivel = crearGrafica('chartNivel', 'Nivel', '#1976d2', filtrados.map(d => d.nivel), etiquetas, '%');
+            charts.presion = crearGrafica('chartPresion', 'Presión', '#f57c00', filtrados.map(d => d.presion), etiquetas, 'kPa');
+            charts.metano = crearGrafica('chartMetano', 'Metano', '#7b1fa2', filtrados.map(d => d.metano), etiquetas, 'Rs/R0');
+
+            // Mostrar el eje X solo en la última gráfica para mantener la estética limpia
+            charts.metano.options.scales.x.display = true;
+            charts.metano.options.scales.x.title = { display: true, text: 'Hora' };
+            charts.metano.update();
+        }
+
+        function filtrarGraficas(dias) {
             document.querySelectorAll('.filtros button').forEach(btn => btn.classList.remove('activo'));
             document.getElementById(dias === 1 ? 'btn-1d' : 'btn-7d').classList.add('activo');
-            dibujarGrafica(dias);
+            dibujarGraficas(dias);
         }
 
         cargarHistorial();
