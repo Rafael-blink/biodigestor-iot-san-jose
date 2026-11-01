@@ -5,6 +5,7 @@
 ![Tech4Good](https://img.shields.io/badge/Tech4Good-Challenge-brightgreen?style=for-the-badge)
 ![License MIT](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)
 ![Python](https://img.shields.io/badge/MicroPython-3.x-yellow?style=for-the-badge&logo=python)
+![Azure](https://img.shields.io/badge/Azure-IoT_Hub-blue?style=for-the-badge&logo=microsoft-azure)
 ![Hardware](https://img.shields.io/badge/Hardware-Open_Source-orange?style=for-the-badge)
 ![ODS](https://img.shields.io/badge/ODS-4_·_7_·_13-9cf?style=for-the-badge)
 
@@ -19,7 +20,7 @@
 
 Este proyecto transforma residuos pecuarios y vegetales en biogás para generar energía eléctrica, garantizando la continuidad de las actividades académicas en una zona rural con suministro eléctrico inestable.
 
-El sistema monitorea en tiempo real variables críticas del proceso de digestión anaeróbica — temperatura, presión del biogás, nivel de biol, concentración de metano y pH — utilizando una **Raspberry Pi Pico W** y sensores de bajo costo. Los datos se transmiten a una plataforma IoT para visualización y análisis remoto.
+El sistema monitorea en tiempo real cuatro variables críticas del proceso de digestión anaeróbica — temperatura, presión del biogás, nivel de biol y concentración relativa de metano — utilizando una **Raspberry Pi Pico W** y sensores de bajo costo. Los datos se transmiten de forma redundante a **Azure IoT Hub** (para telemetría robusta y tolerante a fallos) y a **GitHub Pages** (para una interfaz web educativa interactiva dirigida a los estudiantes de la institución).
 
 ---
 
@@ -37,10 +38,10 @@ En el municipio de Canalete, Córdoba, la inestabilidad del suministro eléctric
 
 Un sistema de biodigestión anaeróbica con monitoreo inteligente que:
 
-- Genera energía eléctrica a partir de residuos pecuarios locales
-- Monitorea variables críticas en tiempo real mediante IoT
-- Capacita a la comunidad educativa en tecnologías sostenibles
-- Promueve un modelo de economía circular replicable
+- Genera energía eléctrica a partir de residuos pecuarios locales.
+- Monitorea variables críticas en tiempo real mediante IoT.
+- Proporciona una interfaz web lúdica para la apropiación del conocimiento por parte de los niños.
+- Promueve un modelo de economía circular replicable.
 
 ---
 
@@ -51,11 +52,11 @@ graph TD
     A[Biodigestor Tubular] --> B[Sensores]
     B --> C[Raspberry Pi Pico W]
     C --> D[Procesamiento Local]
-    D --> E[Azure]
-    D --> F[Control de Alarmas]
-    E --> G[Dashboard Web]
-    F --> H[LEDs de Estado]
-    D --> I[Consola Serial]
+    D --> E[Azure IoT Hub]
+    D --> F[GitHub Actions / Pages]
+    E --> G[Telemetría y Alertas]
+    F --> H[Interfaz Web para Niños]
+    C --> I[Memoria Offline / LED de Estado]
 
     B1[DS18B20 · Temperatura] --> B
     B2[JSN-SR04T · Nivel Biol] --> B
@@ -66,59 +67,85 @@ graph TD
 ### Componentes del Sistema
 
 | Función | Componente |
-|---------|-----------|
+|---------|------------|
 | Microcontrolador | Raspberry Pi Pico W |
 | Sensor de Temperatura | DS18B20 |
-| Sensor de Nivel de Biol | JSN-SR04T |
+| Sensor de Nivel de Biol | JSN-SR04T (Ultrasónico) |
 | Sensor de Presión de Biogás | MPX5100DP |
 | Sensor de Gas Metano | MQ-4 |
-| Convertidor ADC | ADS1115 |
-| Regulador de Alimentación | LM2596 |
+| Acondicionamiento Analógico | Divisores de voltaje (R1 = 10 kΩ, R2 = 20 kΩ) |
+| Regulador de Alimentación | Módulo LM2596 con protección (Diodo 1N4007) |
 
----
+### Características de Software
 
-## Instalación
-
-### Requisitos Previos
-
-- Raspberry Pi Pico W con firmware MicroPython
-- Thonny IDE instalado en el equipo de trabajo
-- Componentes listados en [`hardware/BOM.md`](hardware/BOM.md)
-
-### Pasos de Configuración
-
-1. Clonar el repositorio:
-   ```bash
-   git clone https://github.com/tu-usuario/biodigestor-iot.git
-   cd biodigestor-iot
-   ```
-
-2. Configurar las credenciales en `src/config.py`:
-   ```python
-   SSID = "nombre_red_wifi"
-   PASSWORD = "contraseña"
-   THINGSPEAK_API_KEY = "api_key"
-   ```
-
-3. Ajustar los umbrales del biodigestor en el mismo archivo de configuración.
-
-4. Conectar los sensores siguiendo el diagrama en [`hardware/`](hardware/).
-
-5. Copiar todos los archivos de `src/` a la Pico W mediante Thonny.
-
-6. Ejecutar `main.py`.
+- **Tolerancia a fallos:** el sistema guarda los datos en la memoria flash de la Pico W si se pierde la conexión WiFi y los envía automáticamente al recuperarla.
+- **Sincronización NTP:** uso de socket para obtener la hora exacta de servidores como Google o Cloudflare, asegurando que los registros tengan marcas de tiempo precisas (UTC-5).
+- **Envío alineado:** los datos se envían a la web de GitHub exactamente en múltiplos de 5 minutos (ej. 13:05:00, 13:10:00) para garantizar gráficas continuas y sin saltos.
+- **Persistencia semanal:** una automatización en GitHub Actions crea un nuevo archivo `.csv` cada semana en `docs/historial/` (por ejemplo `2026-W44.csv`) para mantener el repositorio ligero y rápido.
 
 ---
 
 ## Variables Monitoreadas
 
 | Variable | Sensor | Rango Típico | Umbral Crítico |
-|----------|--------|-------------|----------------|
+|----------|--------|--------------|----------------|
 | Temperatura | DS18B20 | 30 – 40 °C | < 25 °C o > 45 °C |
-| Nivel de Biol | JSN-SR04T | 20 – 80 cm | > 90 cm (rebose) |
+| Nivel de Biol | JSN-SR04T | 20 – 80 % | > 85 % (rebose) o < 15 % |
 | Presión de Biogás | MPX5100DP | 0 – 5 kPa | > 10 kPa |
-| Concentración de Metano | MQ-4 | < 1000 PPM | > 5000 PPM |
-| pH *(trabajo futuro)* | Genérico | 6.5 – 7.5 | < 6.0 o > 8.0 |
+| Metano (índice Rs/R0) | MQ-4 | 0.85 – 1.05 | < 0.6 (fuga significativa) |
+
+> **Nota:** la variable de pH fue descartada para esta fase del prototipo por limitaciones presupuestales y de calibración, quedando registrada como trabajo futuro.
+
+---
+
+## Interfaz Web
+
+La página (`docs/index.html`, publicada con GitHub Pages) está pensada para niños de primaria e incluye:
+
+- **Tarjetas con el último valor** de cada variable. Al tocarlas se muestra el sensor que la mide, con un dibujo, una explicación sencilla y un enlace a su hoja de datos.
+- **Indicador de nivel de biol:** un anillo que cambia de color y mensaje (casi vacío, poco lleno, a la mitad, bastante lleno y ¡lleno!). La alerta se activa por encima del 80 %.
+- **Indicador de gas en el aire:** aire limpio (Rs/R0 > 0.85), advertencia (0.6 – 0.85) o peligro (≤ 0.6), calculado con las últimas lecturas para evitar falsas alarmas.
+- **Estado "Sin datos"** si no llegan lecturas nuevas por más de 15 minutos.
+- **Gráficas suavizadas** de las últimas 24 horas o de toda la semana.
+
+> El indicador de gas es educativo y no reemplaza un detector de gas certificado.
+
+---
+
+## Instalación y Despliegue
+
+### Requisitos Previos
+
+- Raspberry Pi Pico W con firmware MicroPython.
+- Thonny IDE o VS Code con la extensión de MicroPython.
+- Componentes listados en [`hardware/BOM.md`](hardware/BOM.md).
+
+### Pasos de Configuración
+
+1. Clonar el repositorio:
+
+   ```bash
+   git clone https://github.com/Rafael-blink/biodigestor-iot-san-jose.git
+   cd biodigestor-iot-san-jose
+   ```
+
+2. Configurar tus credenciales de red y tokens en el archivo `main.py`:
+
+   ```python
+   WIFI_SSID = "nombre_red_wifi"
+   WIFI_PASSWORD = "contraseña"
+   IOT_HUB_NAME = "biodigestor-san-jose-hub"
+   SAS_TOKEN = "tu_token_de_azure"
+   GITHUB_TOKEN = "tu_token_de_github"
+   ```
+
+   > ⚠️ **Nunca subas tus credenciales reales a GitHub.** Usa valores de ejemplo en el repositorio y pon los reales solo en la placa. El token de GitHub debe tener los permisos mínimos necesarios (solo este repositorio).
+
+3. Conectar los sensores a la Pico W siguiendo las conexiones especificadas en la documentación técnica (pines GP14, GP15, GP17, GP26 y GP27).
+
+4. Copiar el archivo `main.py` a la placa mediante Thonny y guardarlo en la memoria interna.
+
+5. Ejecutar y verificar en el monitor serial que el LED de estado se encienda (conexión exitosa).
 
 ---
 
@@ -126,12 +153,13 @@ graph TD
 
 El proyecto contempla las siguientes acciones de apropiación social del conocimiento:
 
-- Dos talleres teórico-prácticos dirigidos a docentes, estudiantes y personal de la institución
-- Elaboración de material didáctico: manuales, infografías y videos educativos
-- Plan de mantenimiento comunitario para garantizar la sostenibilidad a largo plazo
-- Participación en eventos de difusión científica y tecnológica
+- Dos talleres teórico-prácticos dirigidos a docentes, estudiantes y personal de la institución.
+- Desarrollo de una interfaz web con gráficas interactivas diseñada para ser comprensible por niños de primaria.
+- Plan de mantenimiento comunitario para garantizar la sostenibilidad a largo plazo.
 
-### Objetivos de Desarrollo Sostenible (ODS)
+---
+
+## Objetivos de Desarrollo Sostenible (ODS)
 
 | ODS | Descripción |
 |-----|-------------|
@@ -141,43 +169,25 @@ El proyecto contempla las siguientes acciones de apropiación social del conocim
 
 ---
 
-## Equipo de Investigación
-
-| Rol | Nombre | Institución | Programa |
-|-----|--------|------------|----------|
-| Investigador Principal | Rafael Gustavo Ramos Noriega | Universidad Pontificia Bolivariana | Ingeniería Electrónica |
-| Directora | Ana Milena López López | Universidad Pontificia Bolivariana | Ciencias Básicas |
-| Co-director | Carlos Andrés Marenco Porto | Universidad Pontificia Bolivariana | Ingeniería Mecánica |
-
----
-
 ## Documentación
 
 | Documento | Descripción |
 |-----------|-------------|
-| [Especificación Técnica](docs/technical-spec.md) | Detalles de diseño del sistema |
-| [Guía de Ensamblaje](docs/assembly-guide.md) | Instrucciones de montaje del hardware |
-| [Guía de Implementación](docs/implementation-guide.md) | Despliegue del sistema completo |
-| [Impacto Tech4Good](docs/impact.md) | Análisis de impacto social y ambiental |
+| [Especificación Técnica](docs/TECHNICAL_SPECIFICATION.md) | Detalles de diseño del sistema y cálculos matemáticos |
 | [Lista de Materiales](hardware/BOM.md) | Componentes y referencias comerciales |
-
----
-
-## Contribuciones
-
-Las contribuciones son bienvenidas. Por favor, consulte el archivo [`CONTRIBUTING_ES.md`](CONTRIBUTING_ES.md) para conocer las pautas del proyecto antes de enviar un *pull request*.
+| [Registro de Pruebas](docs/test-results/) | Historial de validación de cada sensor y pruebas de integración |
 
 ---
 
 ## Licencia
 
-El software está distribuido bajo la [Licencia MIT](LICENSE).  
-El hardware es de código abierto bajo la [CERN Open Hardware Licence v2 - Strongly Reciprocal (CERN-OHL-S-2.0)](https://ohwr.org/cern_ohl_s_v2.txt).
+- El **software** está distribuido bajo la Licencia MIT.
+- El **hardware** es de código abierto bajo la CERN Open Hardware Licence v2 - Strongly Reciprocal (CERN-OHL-S-2.0).
 
 ---
 
 ## Contacto
 
 **Rafael Gustavo Ramos Noriega**  
-Correo: [rafael.ramosn@upb.edu.co](mailto:rafael.ramosn@upb.edu.co)  
+Correo: rafael.ramosn@upb.edu.co  
 Universidad Pontificia Bolivariana — Seccional Montería
