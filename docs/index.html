@@ -13,26 +13,68 @@
         .icono { display: inline-block; }
         .icono svg { width: 100%; height: 100%; display: block; }
 
+        /* ---------- Tarjetas de valores ---------- */
         .contenedor { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; margin-top: 24px; }
-        .tarjeta { background-color: white; border-radius: 20px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); padding: 16px; width: 170px; }
+        .tarjeta { background-color: white; border-radius: 20px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); padding: 16px; width: 170px; cursor: pointer; border: 3px solid transparent; transition: transform .15s, border-color .15s; }
+        .tarjeta:hover { transform: translateY(-3px); }
+        .tarjeta:focus-visible { outline: 3px solid #00695c; outline-offset: 2px; }
+        .tarjeta.abierta { border-color: currentColor; }
+        .tarjeta.t-temp { color: #d32f2f; } .tarjeta.t-nivel { color: #1976d2; } .tarjeta.t-presion { color: #f57c00; } .tarjeta.t-metano { color: #7b1fa2; }
         .tarjeta .icono { width: 52px; height: 52px; margin-bottom: 4px; }
         .tarjeta h2 { margin: 0; font-size: 1.3em; color: #00796b; }
         .valor { font-size: 2.6em; font-weight: bold; margin: 8px 0; }
         .temp { color: #d32f2f; } .nivel { color: #1976d2; } .presion { color: #f57c00; } .metano { color: #7b1fa2; }
+        .tarjeta div:last-child { color: #333; }
+        .pista { margin: 14px 0 0; color: #00796b; font-size: 1em; }
+
+        /* ---------- Panel de información del sensor ---------- */
+        .panel-sensor { max-width: 720px; margin: 16px auto 0; background: white; border-radius: 20px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); padding: 20px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 20px; border-top: 8px solid #00695c; text-align: left; }
+        .panel-sensor[hidden] { display: none; }
+        .panel-sensor .ilus { width: 200px; max-width: 100%; }
+        .panel-sensor .ilus svg { width: 100%; height: auto; display: block; }
+        .panel-sensor .info { flex: 1; min-width: 220px; }
+        .panel-sensor h3 { margin: 0; font-size: 1.6em; }
+        .panel-sensor .tipo { margin: 2px 0 10px; color: #555; font-weight: bold; }
+        .panel-sensor p.texto { margin: 0 0 14px; line-height: 1.4; color: #333; }
+        .panel-sensor .acciones { display: flex; flex-wrap: wrap; gap: 10px; }
+        .panel-sensor a.enlace, .panel-sensor button.cerrar { font-family: inherit; font-size: 1em; font-weight: bold; padding: 10px 16px; border-radius: 10px; border: none; cursor: pointer; text-decoration: none; }
+        .panel-sensor a.enlace { background: #00695c; color: white; }
+        .panel-sensor a.enlace:hover { background: #004d40; }
+        .panel-sensor button.cerrar { background: #b2dfdb; color: #004d40; }
+        .panel-sensor button.cerrar:hover { background: #80cbc4; }
+
         #actualizacion { margin-top: 24px; color: #555; font-size: 1.1em; }
 
+        /* ---------- Indicadores circulares ---------- */
+        .semaforos { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin: 24px auto 0; max-width: 900px; }
+        .semaforo-box { background: white; border-radius: 20px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); padding: 18px; width: 300px; max-width: 100%; box-sizing: border-box; }
+        .semaforo-box h2 { margin: 0 0 12px; font-size: 1.25em; color: #00796b; }
+        .anillo { position: relative; width: 150px; height: 150px; margin: 0 auto; }
+        .anillo svg { width: 100%; height: 100%; display: block; }
+        .anillo .fondo { fill: none; stroke: #e0e0e0; stroke-width: 12; }
+        .anillo .progreso { fill: none; stroke-width: 12; stroke-linecap: round; stroke-dasharray: 314.16; stroke-dashoffset: 314.16; stroke: #9e9e9e; transition: stroke-dashoffset .8s ease, stroke .4s; }
+        .anillo .centro { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .anillo .grande { font-size: 2em; font-weight: bold; color: #9e9e9e; }
+        .anillo .chico { font-size: .8em; color: #666; }
+        .anillo.alerta { animation: pulso 1.2s ease-in-out infinite; }
+        @keyframes pulso { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.07); } }
+        @media (prefers-reduced-motion: reduce) { .anillo.alerta { animation: none; } }
+        .estado { font-size: 1.4em; font-weight: bold; margin-top: 12px; color: #9e9e9e; }
+        .detalle { font-size: .95em; color: #555; margin-top: 4px; min-height: 2.6em; }
+        .nota { font-size: .8em; color: #777; margin: 8px 0 0; }
+
+        /* ---------- Filtros y gráficas ---------- */
         .filtros { margin-top: 24px; }
         .filtros button { font-family: inherit; padding: 10px 20px; margin: 5px; border: none; border-radius: 10px; background: #b2dfdb; cursor: pointer; font-size: 1em; font-weight: bold; color: #004d40; }
         .filtros button:hover { background: #80cbc4; }
         .filtros button.activo { background: #00695c; color: white; }
 
-        /* Cuadrícula 2x2 de gráficas */
         .graficas-container { max-width: 1000px; margin: 20px auto; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         .grafica-box { background: white; border-radius: 20px; padding: 14px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); }
         .grafica-box h2 { margin: 0 0 8px 0; font-size: 1.2em; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .grafica-box h2 .icono { width: 26px; height: 26px; }
         .grafica-box .lienzo { position: relative; height: 200px; }
-        .t-temp { color: #d32f2f; } .t-nivel { color: #1976d2; } .t-presion { color: #f57c00; } .t-metano { color: #7b1fa2; }
+        .grafica-box.t-temp { color: #d32f2f; } .grafica-box.t-nivel { color: #1976d2; } .grafica-box.t-presion { color: #f57c00; } .grafica-box.t-metano { color: #7b1fa2; }
 
         @media (max-width: 700px) {
             .graficas-container { grid-template-columns: 1fr; }
@@ -49,33 +91,72 @@
     <p>¡Mira lo que está pasando dentro!</p>
 
     <div class="contenedor">
-        <div class="tarjeta">
+        <div class="tarjeta t-temp" id="tarjeta-temp" role="button" tabindex="0" onclick="mostrarSensor('temp')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();mostrarSensor('temp')}">
             <span class="icono temp"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 14.76V5a2 2 0 0 0-4 0v9.76a4 4 0 1 0 4 0z"/></svg></span>
             <h2>Temperatura</h2>
             <div class="valor temp" id="temp">--</div>
             <div>°C</div>
         </div>
-        <div class="tarjeta">
+        <div class="tarjeta t-nivel" id="tarjeta-nivel" role="button" tabindex="0" onclick="mostrarSensor('nivel')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();mostrarSensor('nivel')}">
             <span class="icono nivel"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C12 2 5 10 5 15a7 7 0 0 0 14 0c0-5-7-13-7-13z"/></svg></span>
             <h2>Nivel de Biol</h2>
             <div class="valor nivel" id="nivel">--</div>
             <div>%</div>
         </div>
-        <div class="tarjeta">
+        <div class="tarjeta t-presion" id="tarjeta-presion" role="button" tabindex="0" onclick="mostrarSensor('presion')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();mostrarSensor('presion')}">
             <span class="icono presion"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="12" x2="17" y2="7"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg></span>
             <h2>Presión</h2>
             <div class="valor presion" id="presion">--</div>
             <div>kPa</div>
         </div>
-        <div class="tarjeta">
+        <div class="tarjeta t-metano" id="tarjeta-metano" role="button" tabindex="0" onclick="mostrarSensor('metano')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();mostrarSensor('metano')}">
             <span class="icono metano"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c1 4 5 6 5 11a5 5 0 0 1-10 0c0-2 1-3.5 2-4.5 0 2 1 3 2 3 0-4-1-6 1-9.5z"/></svg></span>
             <h2>Gas Metano</h2>
             <div class="valor metano" id="metano">--</div>
             <div>Rs/R0</div>
         </div>
     </div>
+    <p class="pista">Toca una tarjeta para conocer el sensor que la mide</p>
+
+    <div class="panel-sensor" id="panelSensor" hidden></div>
 
     <div id="actualizacion">Cargando datos...</div>
+
+    <!-- Indicadores circulares -->
+    <div class="semaforos">
+        <div class="semaforo-box">
+            <h2>¿Qué tan lleno está?</h2>
+            <div class="anillo" id="anilloBiol">
+                <svg viewBox="0 0 120 120">
+                    <circle class="fondo" cx="60" cy="60" r="50"/>
+                    <circle class="progreso" id="arcoBiol" cx="60" cy="60" r="50" transform="rotate(-90 60 60)"/>
+                </svg>
+                <div class="centro">
+                    <div class="grande" id="biolPct">--</div>
+                    <div class="chico">de biol</div>
+                </div>
+            </div>
+            <div class="estado" id="biolEstado">Esperando datos</div>
+            <div class="detalle" id="biolDetalle"></div>
+        </div>
+
+        <div class="semaforo-box">
+            <h2>¿Hay gas en el aire?</h2>
+            <div class="anillo" id="anilloGas">
+                <svg viewBox="0 0 120 120">
+                    <circle class="fondo" cx="60" cy="60" r="50"/>
+                    <circle class="progreso" id="arcoGas" cx="60" cy="60" r="50" transform="rotate(-90 60 60)"/>
+                </svg>
+                <div class="centro">
+                    <div class="grande" id="gasValor">--</div>
+                    <div class="chico">Rs/R0</div>
+                </div>
+            </div>
+            <div class="estado" id="gasEstado">Esperando datos</div>
+            <div class="detalle" id="gasDetalle"></div>
+            <p class="nota">Indicador educativo: no reemplaza un detector de gas certificado.</p>
+        </div>
+    </div>
 
     <div class="filtros">
         <button onclick="filtrarGraficas(1)" id="btn-1d" class="activo">Últimas 24h</button>
@@ -83,32 +164,166 @@
     </div>
 
     <div class="graficas-container">
-        <div class="grafica-box">
-            <h2 class="t-temp"><span class="icono"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 14.76V5a2 2 0 0 0-4 0v9.76a4 4 0 1 0 4 0z"/></svg></span>Temperatura (°C)</h2>
+        <div class="grafica-box t-temp">
+            <h2><span class="icono"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 14.76V5a2 2 0 0 0-4 0v9.76a4 4 0 1 0 4 0z"/></svg></span>Temperatura (°C)</h2>
             <div class="lienzo"><canvas id="chartTemp"></canvas></div>
         </div>
 
-        <div class="grafica-box">
-            <h2 class="t-nivel"><span class="icono"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C12 2 5 10 5 15a7 7 0 0 0 14 0c0-5-7-13-7-13z"/></svg></span>Nivel de Biol (%)</h2>
+        <div class="grafica-box t-nivel">
+            <h2><span class="icono"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C12 2 5 10 5 15a7 7 0 0 0 14 0c0-5-7-13-7-13z"/></svg></span>Nivel de Biol (%)</h2>
             <div class="lienzo"><canvas id="chartNivel"></canvas></div>
         </div>
 
-        <div class="grafica-box">
-            <h2 class="t-presion"><span class="icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="12" x2="17" y2="7"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg></span>Presión (kPa)</h2>
+        <div class="grafica-box t-presion">
+            <h2><span class="icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="12" x2="17" y2="7"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg></span>Presión (kPa)</h2>
             <div class="lienzo"><canvas id="chartPresion"></canvas></div>
         </div>
 
-        <div class="grafica-box">
-            <h2 class="t-metano"><span class="icono"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c1 4 5 6 5 11a5 5 0 0 1-10 0c0-2 1-3.5 2-4.5 0 2 1 3 2 3 0-4-1-6 1-9.5z"/></svg></span>Gas Metano (Rs/R0)</h2>
+        <div class="grafica-box t-metano">
+            <h2><span class="icono"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c1 4 5 6 5 11a5 5 0 0 1-10 0c0-2 1-3.5 2-4.5 0 2 1 3 2 3 0-4-1-6 1-9.5z"/></svg></span>Gas Metano (Rs/R0)</h2>
             <div class="lienzo"><canvas id="chartMetano"></canvas></div>
         </div>
     </div>
 
     <script>
+        // ================== AJUSTES (puedes cambiar estos números) ==================
+        const UMBRAL_GAS_ADVERTENCIA = 0.85; // Rs/R0 por debajo de esto: advertencia
+        const UMBRAL_GAS_PELIGRO = 0.6;      // Rs/R0 por debajo de esto: peligro
+        const LECTURAS_GAS = 3;              // se usan las últimas 3 lecturas (15 min) para evitar falsas alarmas
+        const NIVEL_LLENO_ON = 80;           // "¡Lleno!" se activa por encima de este %
+        const NIVEL_LLENO_OFF = 75;          // y se apaga cuando baja de este %
+        const MINUTOS_SIN_DATOS = 15;        // si el último dato es más viejo, se muestra "Sin datos"
+        const VENTANA_24H = 9;               // suavizado de gráficas (puntos de 5 min)
+        const VENTANA_SEMANA = 25;
+        // ============================================================================
+
         let charts = { temp: null, nivel: null, presion: null, metano: null };
         let datosHistorial = [];
         let semanaActual = "";
+        let biolLleno = false;
+        let sensorAbierto = null;
 
+        // ---------- Información de los sensores ----------
+        const SENSORES = {
+            temp: {
+                nombre: 'DS18B20', tipo: 'Sensor de temperatura', color: '#d32f2f',
+                texto: 'Es un termómetro digital dentro de una cápsula de metal que aguanta el agua. Le cuenta a la Pico qué tan caliente está el biodigestor, ¡porque las bacterias trabajan mejor con calorcito!',
+                enlace: 'https://www.analog.com/media/en/technical-documentation/data-sheets/DS18B20.pdf',
+                ilustracion: '<svg viewBox="0 0 160 120" role="img" aria-label="Dibujo de la sonda DS18B20"><path d="M8 100 C45 100 40 62 70 62" fill="none" stroke="#263238" stroke-width="6" stroke-linecap="round"/><rect x="62" y="50" width="16" height="24" rx="4" fill="#455a64"/><rect x="76" y="46" width="72" height="32" rx="16" fill="#b0bec5" stroke="#78909c" stroke-width="3"/><rect x="88" y="53" width="48" height="6" rx="3" fill="#eceff1"/><circle cx="132" cy="64" r="4" fill="#d32f2f"/></svg>'
+            },
+            nivel: {
+                nombre: 'JSN-SR04T', tipo: 'Sensor ultrasónico de nivel', color: '#1976d2',
+                texto: 'Lanza un sonido que no podemos oír, como hacen los murciélagos. Mide cuánto tarda en rebotar en el biol y así calcula qué tan lleno está el biodigestor.',
+                enlace: 'https://www.makerguides.com/jsn-sr04t-arduino-tutorial/',
+                ilustracion: '<svg viewBox="0 0 160 120" role="img" aria-label="Dibujo del sensor ultrasónico JSN-SR04T"><path d="M14 108 C28 108 30 96 40 88" fill="none" stroke="#263238" stroke-width="6" stroke-linecap="round"/><circle cx="62" cy="62" r="34" fill="#37474f" stroke="#263238" stroke-width="3"/><circle cx="62" cy="62" r="24" fill="#263238"/><circle cx="62" cy="62" r="12" fill="#546e7a"/><path d="M106 44 Q118 62 106 80" fill="none" stroke="#1976d2" stroke-width="4" stroke-linecap="round"/><path d="M118 34 Q136 62 118 90" fill="none" stroke="#64b5f6" stroke-width="4" stroke-linecap="round"/><path d="M130 24 Q154 62 130 100" fill="none" stroke="#bbdefb" stroke-width="4" stroke-linecap="round"/></svg>'
+            },
+            presion: {
+                nombre: 'MPX5100DP', tipo: 'Sensor de presión', color: '#f57c00',
+                texto: 'Siente cuánto empuja el gas y lo convierte en electricidad: mientras más empuje, más voltaje manda a la Pico. Así sabemos si el biodigestor se está llenando de gas.',
+                enlace: 'https://www.nxp.com/docs/en/data-sheet/MPX5100.pdf',
+                ilustracion: '<svg viewBox="0 0 160 120" role="img" aria-label="Dibujo del sensor de presión MPX5100DP"><rect x="34" y="44" width="92" height="46" rx="8" fill="#263238"/><rect x="48" y="26" width="18" height="22" rx="4" fill="#78909c"/><rect x="94" y="26" width="18" height="22" rx="4" fill="#78909c"/><ellipse cx="57" cy="26" rx="7" ry="3" fill="#cfd8dc"/><ellipse cx="103" cy="26" rx="7" ry="3" fill="#cfd8dc"/><text x="80" y="72" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff" font-family="sans-serif">MPX5100</text><rect x="57" y="90" width="6" height="20" fill="#cfd8dc"/><rect x="77" y="90" width="6" height="20" fill="#cfd8dc"/><rect x="97" y="90" width="6" height="20" fill="#cfd8dc"/></svg>'
+            },
+            metano: {
+                nombre: 'MQ-4', tipo: 'Sensor de gas metano (calidad del aire)', color: '#7b1fa2',
+                texto: 'Es como una nariz electrónica. Cuando huele metano, su resistencia cambia, y así sabemos si hay gas escapándose en el aire cerca del biodigestor.',
+                enlace: 'https://www.winsen-sensor.com/d/files/semiconductor/mq-4.pdf',
+                ilustracion: '<svg viewBox="0 0 160 120" role="img" aria-label="Dibujo del sensor de gas MQ-4"><circle cx="80" cy="52" r="38" fill="#b0bec5" stroke="#78909c" stroke-width="3"/><circle cx="80" cy="52" r="28" fill="#eceff1"/><g fill="#90a4ae"><circle cx="68" cy="40" r="3"/><circle cx="80" cy="40" r="3"/><circle cx="92" cy="40" r="3"/><circle cx="68" cy="52" r="3"/><circle cx="80" cy="52" r="3"/><circle cx="92" cy="52" r="3"/><circle cx="68" cy="64" r="3"/><circle cx="80" cy="64" r="3"/><circle cx="92" cy="64" r="3"/></g><rect x="62" y="88" width="5" height="24" fill="#cfd8dc"/><rect x="74" y="88" width="5" height="24" fill="#cfd8dc"/><rect x="86" y="88" width="5" height="24" fill="#cfd8dc"/><rect x="98" y="88" width="5" height="24" fill="#cfd8dc"/></svg>'
+            }
+        };
+
+        function mostrarSensor(clave) {
+            const panel = document.getElementById('panelSensor');
+            document.querySelectorAll('.tarjeta').forEach(t => t.classList.remove('abierta'));
+
+            if (sensorAbierto === clave) {
+                sensorAbierto = null;
+                panel.hidden = true;
+                return;
+            }
+            sensorAbierto = clave;
+            const s = SENSORES[clave];
+            document.getElementById('tarjeta-' + clave).classList.add('abierta');
+            panel.style.borderTopColor = s.color;
+            panel.innerHTML =
+                '<div class="ilus">' + s.ilustracion + '</div>' +
+                '<div class="info">' +
+                    '<h3 style="color:' + s.color + '">' + s.nombre + '</h3>' +
+                    '<p class="tipo">' + s.tipo + '</p>' +
+                    '<p class="texto">' + s.texto + '</p>' +
+                    '<div class="acciones">' +
+                        '<a class="enlace" href="' + s.enlace + '" target="_blank" rel="noopener noreferrer">¿Qué es este sensor?</a>' +
+                        '<button class="cerrar" type="button" onclick="mostrarSensor(\'' + clave + '\')">Cerrar</button>' +
+                    '</div>' +
+                '</div>';
+            panel.hidden = false;
+        }
+
+        // ---------- Indicadores circulares ----------
+        const CIRC = 2 * Math.PI * 50; // circunferencia del anillo (r = 50)
+        const GRIS = '#9e9e9e';
+
+        function pintarAnillo(idAnillo, idArco, idTexto, idEstado, idDetalle, cfg) {
+            const arco = document.getElementById(idArco);
+            arco.style.strokeDashoffset = CIRC * (1 - cfg.progreso);
+            arco.style.stroke = cfg.color;
+
+            const texto = document.getElementById(idTexto);
+            texto.textContent = cfg.texto;
+            texto.style.color = cfg.color;
+
+            const estado = document.getElementById(idEstado);
+            estado.textContent = cfg.estado;
+            estado.style.color = cfg.color;
+
+            document.getElementById(idDetalle).textContent = cfg.detalle;
+            document.getElementById(idAnillo).classList.toggle('alerta', !!cfg.alerta);
+        }
+
+        function actualizarSemaforos() {
+            const ultimo = datosHistorial[datosHistorial.length - 1];
+            const sinConexion = !ultimo || (Date.now() - ultimo.fecha.getTime()) > MINUTOS_SIN_DATOS * 60000;
+            const textoSinConexion = 'No llegan datos nuevos desde hace más de ' + MINUTOS_SIN_DATOS + ' minutos';
+
+            // ----- Nivel de biol -----
+            const sinNivel = {progreso: 0, color: GRIS, texto: '--', estado: 'Sin datos', detalle: textoSinConexion, alerta: false};
+            if (sinConexion || isNaN(ultimo.nivel)) {
+                pintarAnillo('anilloBiol', 'arcoBiol', 'biolPct', 'biolEstado', 'biolDetalle', sinNivel);
+            } else {
+                const nivel = ultimo.nivel;
+                if (nivel > NIVEL_LLENO_ON) biolLleno = true;
+                else if (nivel < NIVEL_LLENO_OFF) biolLleno = false;
+
+                let cfg;
+                if (biolLleno) cfg = {estado: '¡Lleno!', color: '#e53935', detalle: 'Pasó del ' + NIVEL_LLENO_ON + '%: hay que avisar a un adulto', alerta: true};
+                else if (nivel < 20) cfg = {estado: 'Casi vacío', color: '#78909c', detalle: 'Menos del 20%'};
+                else if (nivel < 40) cfg = {estado: 'Poco lleno', color: '#43a047', detalle: 'Entre 20% y 40%'};
+                else if (nivel < 60) cfg = {estado: 'A la mitad', color: '#7cb342', detalle: 'Entre 40% y 60%'};
+                else cfg = {estado: 'Bastante lleno', color: '#f9a825', detalle: 'Entre 60% y 80%'};
+
+                cfg.progreso = Math.max(0, Math.min(1, nivel / 100));
+                cfg.texto = nivel.toFixed(0) + '%';
+                pintarAnillo('anilloBiol', 'arcoBiol', 'biolPct', 'biolEstado', 'biolDetalle', cfg);
+            }
+
+            // ----- Gas en el aire (usa el valor más alto de las últimas lecturas) -----
+            const sinGas = {progreso: 0, color: GRIS, texto: '--', estado: 'Sin datos', detalle: textoSinConexion, alerta: false};
+            const recientes = datosHistorial.slice(-LECTURAS_GAS).map(d => d.metano).filter(v => !isNaN(v));
+            if (sinConexion || recientes.length === 0) {
+                pintarAnillo('anilloGas', 'arcoGas', 'gasValor', 'gasEstado', 'gasDetalle', sinGas);
+            } else {
+                const mejor = Math.max.apply(null, recientes);
+                let cfg;
+                if (mejor <= UMBRAL_GAS_PELIGRO) cfg = {estado: '¡Peligro!', color: '#e53935', detalle: 'Posible fuga de gas: aléjate de chispas y llamas y avisa a un adulto', alerta: true};
+                else if (mejor <= UMBRAL_GAS_ADVERTENCIA) cfg = {estado: 'Advertencia', color: '#fb8c00', detalle: 'Posible fuga leve: pide que la revisen'};
+                else cfg = {estado: 'Aire limpio', color: '#43a047', detalle: 'Todo normal, no se detecta gas'};
+
+                cfg.progreso = 1;
+                cfg.texto = mejor.toFixed(2);
+                pintarAnillo('anilloGas', 'arcoGas', 'gasValor', 'gasEstado', 'gasDetalle', cfg);
+            }
+        }
+
+        // ---------- Carga de datos ----------
         async function cargarHistorial() {
             try {
                 const respSemana = await fetch('historial/semana_actual.txt?t=' + new Date().getTime());
@@ -124,7 +339,8 @@
                 datosHistorial = lineas.slice(1).map(linea => {
                     const valores = linea.split(',');
                     return {
-                        fecha: new Date(valores[0].replace(' ', 'T')),
+                        // Las fechas del CSV están en hora de Colombia (UTC-5)
+                        fecha: new Date(valores[0].trim().replace(' ', 'T') + '-05:00'),
                         temperatura: parseFloat(valores[1]),
                         nivel: parseFloat(valores[2]),
                         presion: parseFloat(valores[3]),
@@ -141,6 +357,8 @@
                     document.getElementById('actualizacion').textContent = 'Última actualización: ' + ultimo.fecha.toLocaleString();
                 }
 
+                actualizarSemaforos();
+
                 const botonActivo = document.querySelector('.filtros button.activo');
                 const dias = botonActivo && botonActivo.id === 'btn-7d' ? 7 : 1;
                 dibujarGraficas(dias);
@@ -148,9 +366,11 @@
             } catch (error) {
                 console.error('Error:', error);
                 document.getElementById('actualizacion').textContent = 'Esperando datos nuevos...';
+                actualizarSemaforos();
             }
         }
 
+        // ---------- Gráficas ----------
         function crearGrafica(idCanvas, label, color, datos, etiquetas, unidad) {
             const ctx = document.getElementById(idCanvas).getContext('2d');
             return new Chart(ctx, {
@@ -181,6 +401,18 @@
             });
         }
 
+        // Promedio móvil centrado: cada punto es el promedio de sus vecinos (ignora NaN)
+        function suavizar(datos, ventana) {
+            const mitad = Math.floor(ventana / 2);
+            return datos.map((_, i) => {
+                let suma = 0, n = 0;
+                for (let j = Math.max(0, i - mitad); j <= Math.min(datos.length - 1, i + mitad); j++) {
+                    if (!isNaN(datos[j])) { suma += datos[j]; n++; }
+                }
+                return n > 0 ? suma / n : NaN;
+            });
+        }
+
         function dibujarGraficas(dias) {
             if (datosHistorial.length === 0) return;
 
@@ -195,27 +427,12 @@
 
             Object.keys(charts).forEach(k => { if (charts[k]) charts[k].destroy(); });
 
-            // Ventana de suavizado (en puntos; 1 punto = 5 min). Súbela para más suavizado.
             const v = dias === 1 ? VENTANA_24H : VENTANA_SEMANA;
 
             charts.temp = crearGrafica('chartTemp', 'Temperatura', '#d32f2f', suavizar(filtrados.map(d => d.temperatura), v), etiquetas, '°C');
             charts.nivel = crearGrafica('chartNivel', 'Nivel', '#1976d2', suavizar(filtrados.map(d => d.nivel), v), etiquetas, '%');
             charts.presion = crearGrafica('chartPresion', 'Presión', '#f57c00', suavizar(filtrados.map(d => d.presion), v), etiquetas, 'kPa');
             charts.metano = crearGrafica('chartMetano', 'Metano', '#7b1fa2', suavizar(filtrados.map(d => d.metano), v), etiquetas, 'Rs/R0');
-        }
-
-        // Promedio móvil centrado: cada punto es el promedio de sus vecinos (ignora NaN)
-        const VENTANA_24H = 9;      // ~45 min
-        const VENTANA_SEMANA = 25;  // ~2 horas
-        function suavizar(datos, ventana) {
-            const mitad = Math.floor(ventana / 2);
-            return datos.map((_, i) => {
-                let suma = 0, n = 0;
-                for (let j = Math.max(0, i - mitad); j <= Math.min(datos.length - 1, i + mitad); j++) {
-                    if (!isNaN(datos[j])) { suma += datos[j]; n++; }
-                }
-                return n > 0 ? suma / n : NaN;
-            });
         }
 
         function filtrarGraficas(dias) {
@@ -226,6 +443,7 @@
 
         cargarHistorial();
         setInterval(cargarHistorial, 30000);
+        setInterval(actualizarSemaforos, 60000); // revisa si los datos se quedaron viejos
     </script>
 </body>
 </html>
